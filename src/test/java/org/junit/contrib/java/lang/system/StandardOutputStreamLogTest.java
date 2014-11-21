@@ -8,36 +8,42 @@ import static org.junit.Assert.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
 import org.junit.runners.model.Statement;
 
+@RunWith(HierarchicalContextRunner.class)
 public class StandardOutputStreamLogTest {
 	private static final String ARBITRARY_TEXT = "arbitrary text";
 
 	@Rule
 	public final ExpectedException thrown = ExpectedException.none();
 
-	@Test
-	public void logWriting() throws Throwable {
-		StandardOutputStreamLog log = createLogWithoutSpecificMode();
-		executeRuleWithStatement(log, new WriteTextToStandardOutputStream());
-		assertThat(log.getLog(), is(equalTo(ARBITRARY_TEXT)));
-	}
+	public class ForEveryLogMode {
+		//use log with standard mode as representative for every log mode
+		private final StandardOutputStreamLog log = new StandardOutputStreamLog();
 
-	@Test
-	public void restoreSystemOutputStream() throws Throwable {
-		StandardOutputStreamLog log = createLogWithoutSpecificMode();
-		PrintStream originalStream = out;
-		executeRuleWithStatement(log, new WriteTextToStandardOutputStream());
-		assertThat(originalStream, is(sameInstance(out)));
+		@Test
+		public void logWriting() throws Throwable {
+			executeRuleWithStatement(log, new WriteTextToStandardOutputStream());
+			assertThat(log.getLog(), is(equalTo(ARBITRARY_TEXT)));
+		}
+
+		@Test
+		public void restoreSystemErrorStream() throws Throwable {
+			PrintStream originalStream = out;
+			executeRuleWithStatement(log, new WriteTextToStandardOutputStream());
+			assertThat(originalStream, is(sameInstance(out)));
+		}
 	}
 
 	@Test
 	public void stillWritesToSystemOutputStreamIfNoLogModeHasBeenSpecified() throws Throwable {
-		StandardOutputStreamLog log = createLogWithoutSpecificMode();
+		StandardOutputStreamLog log = new StandardOutputStreamLog();
 		PrintStream originalStream = out;
 		try {
 			ByteArrayOutputStream captureOutputStream = new ByteArrayOutputStream();
@@ -65,21 +71,10 @@ public class StandardOutputStreamLogTest {
 	}
 
 	@Test
-	public void collectsLogAfterClearing() throws Throwable {
-		StandardOutputStreamLog log = createLogWithoutSpecificMode();
-		executeRuleWithStatement(log, new ClearLogWhileWritingTextToStandardOutputStream(log));
-		assertThat(log.getLog(), is(equalTo(ARBITRARY_TEXT)));
-	}
-
-	@Test
 	public void cannotBeCreatedWithoutLogMode() {
 		thrown.expect(NullPointerException.class);
 		thrown.expectMessage(equalTo("The LogMode is missing."));
 		new StandardErrorStreamLog(null);
-	}
-
-	private StandardOutputStreamLog createLogWithoutSpecificMode() {
-		return new StandardOutputStreamLog();
 	}
 
 	private void executeRuleWithStatement(TestRule rule, Statement statement) throws Throwable {
