@@ -4,17 +4,12 @@ import static com.github.stefanbirkner.fishbowl.Fishbowl.exceptionThrownBy;
 import static java.lang.System.getSecurityManager;
 import static java.lang.System.setSecurityManager;
 import static java.lang.Thread.sleep;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.Permission;
 
-import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runners.model.Statement;
 
@@ -54,21 +49,21 @@ public class ExpectedSystemExitTest {
 	@Test
 	public void failForUnexpectedSystemExit() throws Throwable {
 		Throwable exception = exceptionThrownByRuleForStatement(new SystemExit0());
-		assertThat(exception, hasMessage("Unexpected call of System.exit(0)."));
+		assertThat(exception).hasMessage("Unexpected call of System.exit(0).");
 	}
 
 	@Test
 	public void failBecauseOfMissingSystemExitCall() throws Throwable {
 		rule.expectSystemExit();
 		Throwable exception = exceptionThrownByRuleForStatement(new EmptyStatement());
-		assertThat(exception, hasMessage("System.exit has not been called."));
+		assertThat(exception).hasMessage("System.exit has not been called.");
 	}
 
 	@Test
 	public void failForWrongStatus() throws Throwable {
 		rule.expectSystemExitWithStatus(1);
 		Throwable exception = exceptionThrownByRuleForStatement(new SystemExit0());
-		assertThat(exception, hasMessage("Wrong exit status expected:<1> but was:<0>"));
+		assertThat(exception).hasMessage("Wrong exit status expected:<1> but was:<0>");
 	}
 
 	@Test
@@ -87,7 +82,7 @@ public class ExpectedSystemExitTest {
 		rule.expectSystemExit();
 		rule.checkAssertionAfterwards(INVALID_ASSERTION);
 		Throwable exception = exceptionThrownByRuleForStatement(new SystemExit0());
-		assertThat(exception, hasMessage("Assertion failed."));
+		assertThat(exception).hasMessage("Assertion failed.");
 	}
 
 	@Test
@@ -95,7 +90,7 @@ public class ExpectedSystemExitTest {
 		rule.checkAssertionAfterwards(INVALID_ASSERTION);
 		rule.checkAssertionAfterwards(VALID_ASSERTION);
 		Throwable exception = exceptionThrownByRuleForStatement(new EmptyStatement());
-		assertThat(exception, hasMessage("Assertion failed."));
+		assertThat(exception).hasMessage("Assertion failed.");
 	}
 
 	@Test
@@ -103,7 +98,7 @@ public class ExpectedSystemExitTest {
 		rule.checkAssertionAfterwards(VALID_ASSERTION);
 		rule.checkAssertionAfterwards(INVALID_ASSERTION);
 		Throwable exception = exceptionThrownByRuleForStatement(new EmptyStatement());
-		assertThat(exception, hasMessage("Assertion failed."));
+		assertThat(exception).hasMessage("Assertion failed.");
 	}
 
 	@Test
@@ -111,7 +106,7 @@ public class ExpectedSystemExitTest {
 		SecurityManager manager = new ArbitrarySecurityManager();
 		setSecurityManager(manager);
 		executeRuleWithoutExitCall();
-		assertThat(getSecurityManager(), sameInstance(manager));
+		assertThat(getSecurityManager()).isSameAs(manager);
 	}
 
 	@Test
@@ -147,10 +142,6 @@ public class ExpectedSystemExitTest {
 		rule.apply(statement, null).evaluate();
 	}
 
-	private Matcher<Throwable> hasMessage(String message) {
-		return hasProperty("message", equalTo(message));
-	}
-
 	private static class SystemExit0 extends Statement {
 		@Override
 		public void evaluate() throws Throwable {
@@ -161,7 +152,8 @@ public class ExpectedSystemExitTest {
 	private static class CheckContext extends Statement {
 		@Override
 		public void evaluate() throws Throwable {
-			assertEquals(ARBITRARY_CONTEXT, getSecurityManager().getSecurityContext());
+			assertThat(getSecurityManager().getSecurityContext())
+				.isSameAs(ARBITRARY_CONTEXT);
 		}
 	}
 

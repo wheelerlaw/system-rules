@@ -4,10 +4,7 @@ import static java.lang.System.clearProperty;
 import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
 import static org.apache.commons.io.IOUtils.copy;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.contrib.java.lang.system.ProvideSystemProperty.fromFile;
 import static org.junit.contrib.java.lang.system.ProvideSystemProperty.fromResource;
 
@@ -49,14 +46,14 @@ public class ProvideSystemPropertyTest {
 	public void restoreOriginalValue() throws Throwable {
 		setProperty(ARBITRARY_NAME, A_DIFFERENT_VALUE);
 		evaluateStatementWithArbitraryValue();
-		assertThat(getProperty(ARBITRARY_NAME), is(equalTo(A_DIFFERENT_VALUE)));
+		assertThat(getProperty(ARBITRARY_NAME)).isEqualTo(A_DIFFERENT_VALUE);
 	}
 
 	@Test
 	public void removeValueIfNotPresentBefore() throws Throwable {
 		clearProperty(ARBITRARY_NAME);
 		evaluateStatementWithArbitraryValue();
-		assertThat(getProperty(ARBITRARY_NAME), is(nullValue()));
+		assertThat(getProperty(ARBITRARY_NAME)).isNull();
 	}
 
 	@Test
@@ -91,8 +88,8 @@ public class ProvideSystemPropertyTest {
 		evaluateAssertPropertyWithNameAndValue(ANOTHER_PROPERTY,
 			A_DIFFERENT_VALUE);
 
-		assertThat(getProperty(ARBITRARY_NAME), is(nullValue()));
-		assertThat(getProperty(ANOTHER_PROPERTY), is(ARBITRARY_VALUE));
+		assertThat(getProperty(ARBITRARY_NAME)).isNull();
+		assertThat(getProperty(ANOTHER_PROPERTY)).isEqualTo(ARBITRARY_VALUE);
 	}
 
 	@Test
@@ -102,8 +99,8 @@ public class ProvideSystemPropertyTest {
 		rule = new ProvideSystemProperty();
 		evaluateRuleForStatement(new SetPropertyAndAssertValue(ARBITRARY_NAME,
 			"dummy value"));
-		assertThat(getProperty(ARBITRARY_NAME),
-			is(equalTo("value before executing the rule")));
+		assertThat(getProperty(ARBITRARY_NAME))
+			.isEqualTo("value before executing the rule");
 	}
 
 	private void evaluateStatementWithArbitraryValue() throws Throwable {
@@ -139,7 +136,7 @@ public class ProvideSystemPropertyTest {
 
 		@Override
 		public void evaluate() {
-			assertThat(getProperty(name), is(equalTo(value)));
+			assertThat(getProperty(name)).isEqualTo(value);
 		}
 	}
 
@@ -155,7 +152,7 @@ public class ProvideSystemPropertyTest {
 		@Override
 		public void evaluate() {
 			rule.setProperty(name, value);
-			assertThat(getProperty(name), is(equalTo(value)));
+			assertThat(getProperty(name)).isEqualTo(value);
 		}
 	}
 }

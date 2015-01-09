@@ -3,10 +3,7 @@ package org.junit.contrib.java.lang.system;
 import static java.lang.System.clearProperty;
 import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
 import org.junit.Test;
@@ -34,14 +31,14 @@ public class RestoreSystemPropertiesTest {
 	public void restoresExistingProperty() throws Throwable {
 		setPropertyValue("dummy value");
 		evaluateRuleThatWrapsStatementThatSetsThePropertyValue();
-		assertThat(getPropertyValue(), is(equalTo("dummy value")));
+		assertThat(getPropertyValue()).isEqualTo("dummy value");
 	}
 
 	@Test
 	public void clearsMissingProperty() throws Throwable {
 		clearProperty(PROPERTY_KEY);
 		evaluateRuleThatWrapsStatementThatSetsThePropertyValue();
-		assertThat(getPropertyValue(), is(nullValue()));
+		assertThat(getPropertyValue()).isNull();
 	}
 
 	@Test
@@ -50,7 +47,7 @@ public class RestoreSystemPropertiesTest {
 		Statement verifyProperty = new Statement() {
 			@Override
 			public void evaluate() throws Throwable {
-				assertThat(getPropertyValue(), is(equalTo("dummy value")));
+				assertThat(getPropertyValue()).isEqualTo("dummy value");
 			}
 		};
 		evaluateRuleThatWrapsStatement(verifyProperty);

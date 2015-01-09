@@ -3,10 +3,7 @@ package org.junit.contrib.java.lang.system;
 import static java.lang.System.clearProperty;
 import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,16 +25,15 @@ public class ClearSystemPropertiesTest {
 	public void restoresOriginalValueOfSecondProperty() throws Throwable {
 		setProperty(SECOND_ARBITRARY_NAME, ARBITRARY_VALUE);
 		applyRuleToStatement(new VerifyValueIsCleared());
-		assertThat(getProperty(SECOND_ARBITRARY_NAME),
-			is(equalTo(ARBITRARY_VALUE)));
+		assertThat(getProperty(SECOND_ARBITRARY_NAME))
+			.isEqualTo(ARBITRARY_VALUE);
 	}
 
 	@Test
 	public void originallyUnsetPropertyRemainsUnset() throws Throwable {
 		clearProperty(SECOND_ARBITRARY_NAME);
 		applyRuleToStatement(new VerifyValueIsCleared());
-		assertThat(getProperty(SECOND_ARBITRARY_NAME),
-			is(nullValue(String.class)));
+		assertThat(getProperty(SECOND_ARBITRARY_NAME)).isNull();
 	}
 
 	@Test
@@ -46,7 +42,7 @@ public class ClearSystemPropertiesTest {
 		setProperty("another property", "dummy value");
 		applyRuleToStatement(new ClearPropertyAndVerifyThatItIsCleared(
 			"another property"));
-		assertThat(getProperty("another property"), is("dummy value"));
+		assertThat(getProperty("another property")).isEqualTo("dummy value");
 	}
 
 	private void applyRuleToStatement(Statement statement) throws Throwable {
@@ -56,8 +52,7 @@ public class ClearSystemPropertiesTest {
 	private class VerifyValueIsCleared extends Statement {
 		@Override
 		public void evaluate() throws Throwable {
-			assertThat(getProperty(SECOND_ARBITRARY_NAME),
-				is(nullValue(String.class)));
+			assertThat(getProperty(SECOND_ARBITRARY_NAME)).isNull();
 		}
 	}
 
@@ -71,7 +66,7 @@ public class ClearSystemPropertiesTest {
 		@Override
 		public void evaluate() throws Throwable {
 			rule.clearProperty(property);
-			assertThat(getProperty(property), is(nullValue(String.class)));
+			assertThat(getProperty(property)).isNull();
 		}
 	}
 }

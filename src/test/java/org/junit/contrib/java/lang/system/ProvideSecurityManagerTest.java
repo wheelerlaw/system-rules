@@ -1,8 +1,7 @@
 package org.junit.contrib.java.lang.system;
 
 import static java.lang.System.getSecurityManager;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.Permission;
 
@@ -19,7 +18,7 @@ public class ProvideSecurityManagerTest {
 	private static final Statement STATEMENT = new Statement() {
 		@Override
 		public void evaluate() throws Throwable {
-			assertThat(getSecurityManager(), is(MANAGER));
+			assertThat(getSecurityManager()).isSameAs(MANAGER);
 		}
 	};
 
@@ -34,7 +33,7 @@ public class ProvideSecurityManagerTest {
 	public void restoreOriginalSecurityManager() throws Throwable {
 		SecurityManager originalManager = getSecurityManager();
 		evaluateRuleWithStatement();
-		assertThat(getSecurityManager(), is(originalManager));
+		assertThat(getSecurityManager()).isSameAs(originalManager);
 	}
 
 	private void evaluateRuleWithStatement() throws Throwable {

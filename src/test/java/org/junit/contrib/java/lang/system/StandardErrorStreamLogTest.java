@@ -3,8 +3,7 @@ package org.junit.contrib.java.lang.system;
 import static com.github.stefanbirkner.fishbowl.Fishbowl.exceptionThrownBy;
 import static java.lang.System.err;
 import static java.lang.System.setErr;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -20,7 +19,7 @@ public class StandardErrorStreamLogTest {
 	public void logWriting() throws Throwable {
 		StandardErrorStreamLog log = createLogWithoutSpecificMode();
 		executeRuleWithStatement(log, new WriteTextToStandardErrorStream());
-		assertThat(log.getLog(), is(equalTo(ARBITRARY_TEXT)));
+		assertThat(log.getLog()).isEqualTo(ARBITRARY_TEXT);
 	}
 
 	@Test
@@ -28,7 +27,7 @@ public class StandardErrorStreamLogTest {
 		StandardErrorStreamLog log = createLogWithoutSpecificMode();
 		PrintStream originalStream = err;
 		executeRuleWithStatement(log, new WriteTextToStandardErrorStream());
-		assertThat(originalStream, is(sameInstance(err)));
+		assertThat(originalStream).isSameAs(err);
 	}
 
 	@Test
@@ -39,7 +38,7 @@ public class StandardErrorStreamLogTest {
 			ByteArrayOutputStream captureErrorStream = new ByteArrayOutputStream();
 			setErr(new PrintStream(captureErrorStream));
 			executeRuleWithStatement(log, new WriteTextToStandardErrorStream());
-			assertThat(captureErrorStream, hasToString(equalTo(ARBITRARY_TEXT)));
+			assertThat(captureErrorStream.toString()).isEqualTo(ARBITRARY_TEXT);
 		} finally {
 			setErr(originalStream);
 		}
@@ -53,7 +52,7 @@ public class StandardErrorStreamLogTest {
 			ByteArrayOutputStream captureErrorStream = new ByteArrayOutputStream();
 			setErr(new PrintStream(captureErrorStream));
 			executeRuleWithStatement(log, new WriteTextToStandardErrorStream());
-			assertThat(captureErrorStream, hasToString(isEmptyString()));
+			assertThat(captureErrorStream.toString()).isEmpty();
 		} finally {
 			setErr(originalStream);
 		}
@@ -63,7 +62,7 @@ public class StandardErrorStreamLogTest {
 	public void collectsLogAfterClearing() throws Throwable {
 		StandardErrorStreamLog log = createLogWithoutSpecificMode();
 		executeRuleWithStatement(log, new ClearLogWhileWritingTextToStandardErrorStream(log));
-		assertThat(log.getLog(), is(equalTo(ARBITRARY_TEXT)));
+		assertThat(log.getLog()).isEqualTo(ARBITRARY_TEXT);
 	}
 
 	@Test
@@ -74,9 +73,9 @@ public class StandardErrorStreamLogTest {
 					new StandardErrorStreamLog(null);
 				}
 			});
-		assertThat(exception, allOf(
-			instanceOf(NullPointerException.class),
-			hasProperty("message", equalTo("The LogMode is missing."))));
+		assertThat(exception)
+			.isInstanceOf(NullPointerException.class)
+			.hasMessage("The LogMode is missing.");
 	}
 
 	private StandardErrorStreamLog createLogWithoutSpecificMode() {
