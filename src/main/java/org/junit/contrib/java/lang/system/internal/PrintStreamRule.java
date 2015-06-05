@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Locale;
 
 import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.rules.TestRule;
@@ -12,6 +13,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import static java.lang.System.getProperty;
+import static java.util.Locale.ENGLISH;
 import static org.apache.commons.io.IOUtils.write;
 
 public class PrintStreamRule implements TestRule {
@@ -69,11 +71,29 @@ public class PrintStreamRule implements TestRule {
 	}
 
 	private static class MuteableLogStream extends PrintStream {
+		private static final boolean AUTO_FLUSH = true;
+		private static final String ENCODING = getEncoding();
 		private final ByteArrayOutputStream failureLog;
 		private final ByteArrayOutputStream log;
 		private final MutableOutputStream muteableOriginalStream;
 		private final MutableOutputStream muteableFailureLog;
 		private final MutableOutputStream muteableLog;
+
+		private static String getEncoding() {
+			String encoding = getPropertySafe("file.encoding");
+			String os = getPropertySafe("os.name");
+			//Replace Windows' default encoding because its console uses CP850.
+			if (os.startsWith("windows") && encoding.equals("cp1252")) {
+				return "cp850";
+			} else {
+				return encoding;
+			}
+		}
+
+		private static String getPropertySafe(String name) {
+			String value = getProperty(name);
+			return (value == null) ? "" : value.toLowerCase(ENGLISH);
+		}
 
 		MuteableLogStream(OutputStream out) throws UnsupportedEncodingException {
 			this(out, new ByteArrayOutputStream(), new ByteArrayOutputStream());
@@ -92,7 +112,8 @@ public class PrintStreamRule implements TestRule {
 				throws UnsupportedEncodingException {
 			super(new TeeOutputStream(
 					muteableOriginalStream,
-					new TeeOutputStream(muteableFailureLog, muteableLog)));
+					new TeeOutputStream(muteableFailureLog, muteableLog)),
+				!AUTO_FLUSH, ENCODING);
 			this.failureLog = failureLog;
 			this.log = log;
 			this.muteableOriginalStream = muteableOriginalStream;
@@ -127,15 +148,8 @@ public class PrintStreamRule implements TestRule {
 		}
 
 		String getLog(ByteArrayOutputStream os) {
-			/* The MuteableLogStream is created with the default encoding
-			 * because it writes to System.out or System.err if not muted and
-			 * System.out/System.err uses the default encoding. As a result all
-			 * other streams receive input that is encoded with the default
-			 * encoding.
-			 */
-			String encoding = getProperty("file.encoding");
 			try {
-				return os.toString(encoding);
+				return os.toString(ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
