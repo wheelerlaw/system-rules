@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.junit.contrib.java.lang.system.Statements.SUCCESSFUL_TEST;
 import static org.junit.contrib.java.lang.system.TextFromStandardInputStream.emptyStandardInputStream;
 
 import java.io.InputStream;
@@ -90,7 +91,7 @@ public class TextFromStandardInputStreamTest {
 	@Test
 	public void restoreSystemIn() throws Throwable {
 		InputStream originalSystemIn = System.in;
-		executeRuleWithStatement(new EmptyStatement());
+		executeRuleWithStatement(SUCCESSFUL_TEST);
 		assertThat(System.in, is(sameInstance(originalSystemIn)));
 	}
 
