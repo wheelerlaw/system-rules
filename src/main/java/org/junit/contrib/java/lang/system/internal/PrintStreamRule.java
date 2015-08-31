@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -143,6 +142,48 @@ public class PrintStreamRule implements TestRule {
 				return os.toString(encoding);
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
+			}
+		}
+		
+		private static class TeeOutputStream extends OutputStream{
+			private OutputStream tee;
+			
+			TestOutputStream(OutputStream out, OutputStream tee){
+				super(out);
+				this.tee = tee;
+			}
+			
+			@Override
+			public void close throws IOException { 
+				try {
+					super.close();
+				} finally {
+					this.tee.close();
+				}
+			}
+			
+			@Override
+			public void flush() throws IOException {
+				super.flush();
+				this.tee.flush();
+			}
+			
+			@Override
+			public void synchronized write(byte[] b) throws IOException {
+				super(b);
+				this.tee.write(b);
+			}
+			
+			@Override
+			public void synchronized write(byte[] b, int off, int len) throws IOException {
+				super(b, off, len);
+				this.tee.write(b, off, len);
+			}
+			
+			@Override
+			public void synchronized write(int b) throws IOException {
+				super(b);
+				this.tee.write(b);
 			}
 		}
 	}
